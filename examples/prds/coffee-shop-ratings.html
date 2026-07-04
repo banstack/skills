@@ -1,0 +1,508 @@
+<title>Coffee Shop Ratings — System Design PRD</title>
+<meta name="description" content="PRD and system design for a mock coffee shop rating site" />
+<style>
+  :root {
+    --bg: #1c1512;
+    --surface: #241a16;
+    --surface-raised: #2c201a;
+    --rule: #3a2c22;
+    --text: #ede3d8;
+    --text-muted: #b3a191;
+    --accent: #c99a3e;
+    --accent-soft: #6b4a2f;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+  }
+
+  .page {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+  }
+
+  header.doc-header {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.75rem;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: 2.25rem;
+    font-weight: 400;
+    margin: 0 0 0.75rem;
+    text-wrap: balance;
+    color: #fff;
+  }
+
+  .dek {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 62ch;
+    margin: 0 0 1.5rem;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .meta-row dt {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
+
+  .meta-row dd {
+    margin: 0.15rem 0 0;
+    color: var(--text);
+  }
+
+  section {
+    margin: 3rem 0;
+  }
+
+  section h2 {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: #fff;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  section h3 {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  p { margin: 0 0 1rem; max-width: 65ch; }
+
+  ul, ol {
+    margin: 0 0 1rem;
+    padding-left: 1.4rem;
+  }
+
+  li { margin-bottom: 0.4rem; max-width: 62ch; }
+
+  .story-list {
+    list-style: none;
+    padding-left: 0;
+    counter-reset: story;
+  }
+
+  .story-list li {
+    counter-increment: story;
+    padding-left: 2.2rem;
+    position: relative;
+    margin-bottom: 0.6rem;
+  }
+
+  .story-list li::before {
+    content: counter(story);
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    background: var(--surface-raised);
+    border: 1px solid var(--rule);
+    width: 1.6rem;
+    height: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card h3 { margin-top: 0; }
+
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .module-card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1rem 1.1rem;
+  }
+
+  .module-card .name {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .module-card .role {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .flow-diagram {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    overflow-x: auto;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+  }
+
+  .flow-step .box {
+    background: var(--surface-raised);
+    border: 1px solid var(--accent-soft);
+    color: var(--text);
+    padding: 0.4rem 0.8rem;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .flow-step .arrow {
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .flow-step .label {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+  }
+
+  code, .code-inline {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--surface-raised);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  .interface-list {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .interface-list li {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent-soft);
+    padding: 0.7rem 1rem;
+    margin-bottom: 0.6rem;
+    border-radius: 3px;
+    color: var(--text);
+  }
+
+  .interface-list .note {
+    display: block;
+    font-family: var(--sans);
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+    font-size: 0.82rem;
+  }
+
+  .decision {
+    padding: 0.9rem 1.1rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+  }
+
+  .decision .call {
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 0.3rem;
+  }
+
+  .seam-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--accent-soft);
+    color: var(--accent);
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  ::selection { background: var(--accent-soft); color: #fff; }
+</style>
+
+<div class="page">
+  <header class="doc-header">
+    <p class="eyebrow">PRD · System Design · plan-to-ship stage 2</p>
+    <h1>Coffee Shop Ratings</h1>
+    <p class="dek">A lightweight site where visitors browse a fixed list of coffee shops and leave anonymous star ratings and comments — no account, no server, no database.</p>
+    <dl class="meta-row">
+      <div><dt>Stack</dt><dd>React + Vite</dd></div>
+      <div><dt>Backend</dt><dd>Mock (localStorage)</dd></div>
+      <div><dt>Auth</dt><dd>None</dd></div>
+      <div><dt>Seam count</dt><dd>1</dd></div>
+    </dl>
+  </header>
+
+  <section id="problem">
+    <h2>Problem Statement</h2>
+    <p>Coffee shop visitors have no lightweight way to see what nearby regulars think of a shop, or to leave their own quick impression. Existing review platforms require an account, bury ratings under unrelated content, and are heavier than the decision actually warrants — "is this place good?" shouldn't take a sign-up.</p>
+  </section>
+
+  <section id="solution">
+    <h2>Solution</h2>
+    <p>A single-page site listing a fixed set of local coffee shops, each showing an average rating at a glance. Opening a shop shows its individual ratings and comments, and lets any visitor submit a 1–5 star rating with an optional comment and display name — no login required. All data is stored in the browser via a mock backend, since this build exists to exercise the design process, not to ship a production service.</p>
+  </section>
+
+  <section id="stories">
+    <h2>User Stories</h2>
+    <ol class="story-list">
+      <li>As a visitor, I want to see a list of nearby coffee shops, so that I can decide where to go.</li>
+      <li>As a visitor, I want to see each shop's average rating at a glance, so that I can quickly compare options.</li>
+      <li>As a visitor, I want to see how many ratings a shop has received, so that I can judge how reliable the average is.</li>
+      <li>As a visitor, I want to open a shop's detail page, so that I can read individual ratings and comments.</li>
+      <li>As a visitor, I want to submit a star rating from 1 to 5, so that I can share my experience.</li>
+      <li>As a visitor, I want to optionally add a comment with my rating, so that I can explain what I liked or didn't.</li>
+      <li>As a visitor, I want to optionally add a display name, so that my feedback feels personal without requiring an account.</li>
+      <li>As a visitor, I want to submit a rating without logging in, so that leaving feedback is frictionless.</li>
+      <li>As a visitor, I want to see my rating appear immediately after submitting, so that I know it was received.</li>
+      <li>As a visitor, I want ratings to persist across page reloads in my browser, so that my feedback isn't lost.</li>
+      <li>As a visitor, I want ratings ordered newest first, so that I see recent feedback first.</li>
+      <li>As a visitor, I want the star input to be a simple click or tap, so that rating takes seconds.</li>
+      <li>As a visitor, I want to see a shop's neighborhood, so that I know roughly where it is.</li>
+      <li>As a visitor, I want the site to work with no real backend, so that it runs as a self-contained demo.</li>
+      <li>As an internal reviewer, I want the ratings data layer isolated behind one interface, so that tests and any future backend swap don't touch UI code.</li>
+    </ol>
+  </section>
+
+  <section id="system-design">
+    <h2>System Design Decisions</h2>
+
+    <h3>Modules</h3>
+    <div class="module-grid">
+      <div class="module-card">
+        <span class="name">seedData</span>
+        <p class="role">Static fixture of ~8–10 coffee shops (id, name, neighborhood, description). Not user-editable.</p>
+      </div>
+      <div class="module-card">
+        <span class="name">ratingsStore</span>
+        <p class="role">The one seam. Wraps localStorage; owns all reads and writes of ratings.</p>
+      </div>
+      <div class="module-card">
+        <span class="name">CoffeeShopList</span>
+        <p class="role">Renders seeded shops with each one's computed average rating.</p>
+      </div>
+      <div class="module-card">
+        <span class="name">CoffeeShopDetail</span>
+        <p class="role">Shows one shop's ratings/comments and hosts the submission form.</p>
+      </div>
+      <div class="module-card">
+        <span class="name">RatingForm</span>
+        <p class="role">Star picker plus optional name/comment inputs; calls ratingsStore.addRating.</p>
+      </div>
+    </div>
+
+    <h3>Data Flow</h3>
+    <div class="flow-diagram">
+      <div class="flow-step">
+        <span class="box">seedData</span>
+        <span class="arrow">→</span>
+        <span class="box">CoffeeShopList</span>
+        <span class="label">static shop list, rendered with computed averages</span>
+      </div>
+      <div class="flow-step">
+        <span class="box">ratingsStore.getRatingsForShop()</span>
+        <span class="arrow">→</span>
+        <span class="box">CoffeeShopList / Detail</span>
+        <span class="label">per-shop ratings, used to compute averages and render the list</span>
+      </div>
+      <div class="flow-step">
+        <span class="box">RatingForm submit</span>
+        <span class="arrow">→</span>
+        <span class="box">ratingsStore.addRating()</span>
+        <span class="label">validates stars 1–5, writes to localStorage</span>
+      </div>
+      <div class="flow-step">
+        <span class="box">addRating() return value</span>
+        <span class="arrow">→</span>
+        <span class="box">CoffeeShopDetail re-render</span>
+        <span class="label">component renders from the returned list — never re-reads storage itself</span>
+      </div>
+    </div>
+
+    <h3>Interfaces</h3>
+    <ul class="interface-list">
+      <li>getShops(): Shop[]
+        <span class="note">Returns the fixed seeded shop list — id, name, neighborhood, description.</span>
+      </li>
+      <li>getRatingsForShop(shopId: string): Rating[]
+        <span class="note">Returns all ratings persisted for a shop, newest first.</span>
+      </li>
+      <li>addRating(shopId: string, input: &#123; stars: 1|2|3|4|5, comment?: string, displayName?: string &#125;): Rating[]
+        <span class="note">Validates stars is 1–5, generates an id and timestamp, persists to localStorage, returns the shop's updated Rating[].</span>
+      </li>
+    </ul>
+
+    <h3>Decisions</h3>
+    <div class="decision">
+      <p class="call">localStorage instead of a real server</p>
+      <p>The goal of this build is a self-contained demo the pipeline can exercise end to end. A real server adds process and deployment concerns that don't serve that goal.</p>
+    </div>
+    <div class="decision">
+      <p class="call">One seam (ratingsStore) instead of separate read/write seams</p>
+      <p>Reads and writes both touch the same persistence concern. A single module keeps the tested interface small without fragmenting into mocks that mirror the implementation rather than the behavior.</p>
+    </div>
+    <div class="decision">
+      <p class="call">Compute averages on read, don't store a running average</p>
+      <p>Ratings volume is small and local. Recomputing from raw ratings avoids any risk of a stored average drifting from the underlying data.</p>
+    </div>
+  </section>
+
+  <section id="testing">
+    <h2>Testing Decisions</h2>
+    <span class="seam-tag">ratingsStore</span>
+    <p>Tests exercise <code>ratingsStore</code>'s public functions only — <code>getShops</code>, <code>getRatingsForShop</code>, <code>addRating</code> — asserting on return values, never reaching into <code>localStorage</code> directly or asserting on component internals. This means storage could later be swapped for a real API without invalidating a single test.</p>
+    <h3>Prior art</h3>
+    <p>None — this is a fresh test build with no existing codebase. The <code>ratingsStore</code> tests are the first written, following one-seam vertical slices per the <code>tdd</code> skill.</p>
+  </section>
+
+  <section id="out-of-scope">
+    <h2>Out of Scope</h2>
+    <ul>
+      <li>User accounts or login</li>
+      <li>Adding new coffee shops — the shop list is fixed and seeded</li>
+      <li>Editing or deleting existing ratings</li>
+      <li>A real backend server or database</li>
+      <li>Photo uploads for shops or reviews</li>
+    </ul>
+  </section>
+
+  <section id="notes">
+    <h2>Further Notes</h2>
+    <p>This is a test build for exercising the <code>to-system-design</code> skill in the <code>plan-to-ship</code> pipeline, not a real product commitment.</p>
+  </section>
+
+  <footer>
+    Generated by <code>to-system-design</code> · plan-to-ship
+  </footer>
+</div>
+
+<script type="application/json" id="prd-data">
+{
+  "problemStatement": "Coffee shop visitors have no lightweight way to see what nearby regulars think of a shop, or to leave their own quick impression. Existing review platforms require an account, bury ratings under unrelated content, and are heavier than the decision actually warrants.",
+  "solution": "A single-page site listing a fixed set of local coffee shops, each showing an average rating at a glance. Opening a shop shows its individual ratings and comments, and lets any visitor submit a 1-5 star rating with an optional comment and display name, no login required. Data is stored in the browser via a mock backend.",
+  "userStories": [
+    "As a visitor, I want to see a list of nearby coffee shops, so that I can decide where to go.",
+    "As a visitor, I want to see each shop's average rating at a glance, so that I can quickly compare options.",
+    "As a visitor, I want to see how many ratings a shop has received, so that I can judge how reliable the average is.",
+    "As a visitor, I want to open a shop's detail page, so that I can read individual ratings and comments.",
+    "As a visitor, I want to submit a star rating from 1 to 5, so that I can share my experience.",
+    "As a visitor, I want to optionally add a comment with my rating, so that I can explain what I liked or didn't.",
+    "As a visitor, I want to optionally add a display name, so that my feedback feels personal without requiring an account.",
+    "As a visitor, I want to submit a rating without logging in, so that leaving feedback is frictionless.",
+    "As a visitor, I want to see my rating appear immediately after submitting, so that I know it was received.",
+    "As a visitor, I want ratings to persist across page reloads in my browser, so that my feedback isn't lost.",
+    "As a visitor, I want ratings ordered newest first, so that I see recent feedback first.",
+    "As a visitor, I want the star input to be a simple click or tap, so that rating takes seconds.",
+    "As a visitor, I want to see a shop's neighborhood, so that I know roughly where it is.",
+    "As a visitor, I want the site to work with no real backend, so that it runs as a self-contained demo.",
+    "As an internal reviewer, I want the ratings data layer isolated behind one interface, so that tests and any future backend swap don't touch UI code."
+  ],
+  "systemDesign": {
+    "modules": [
+      "seedData — static fixture of ~8-10 coffee shops (id, name, neighborhood, description); not user-editable",
+      "ratingsStore — the one seam; wraps localStorage; owns all reads and writes of ratings",
+      "CoffeeShopList — renders seeded shops with each one's computed average rating",
+      "CoffeeShopDetail — shows one shop's ratings/comments and hosts the submission form",
+      "RatingForm — star picker plus optional name/comment inputs; calls ratingsStore.addRating"
+    ],
+    "dataFlow": "On load, the app reads the static shop list from seedData and each shop's ratings from ratingsStore.getRatingsForShop(), computing an average per shop for the list view. Selecting a shop opens CoffeeShopDetail, which pulls that shop's ratings via the same function. Submitting RatingForm calls ratingsStore.addRating(shopId, { stars, comment, displayName }), which validates stars is 1-5, writes the new rating into localStorage, and returns the shop's updated Rating[]; the component re-renders from that returned value rather than re-reading storage itself, keeping the store the single source of truth.",
+    "interfaces": [
+      "getShops(): Shop[] — returns the fixed seeded shop list",
+      "getRatingsForShop(shopId: string): Rating[] — returns all ratings persisted for a shop, newest first",
+      "addRating(shopId: string, input: { stars: 1|2|3|4|5, comment?: string, displayName?: string }): Rating[] — validates stars is 1-5, generates id + timestamp, persists to localStorage, returns the shop's updated Rating[]"
+    ],
+    "decisions": [
+      "Chose localStorage over a real server because the goal of this build is a self-contained demo the pipeline can exercise end to end, and a real server would add process/deployment concerns irrelevant to that goal.",
+      "Chose one seam (ratingsStore) over separate read/write seams because both touch the same persistence concern; a single module keeps the tested interface small without fragmenting into mocks that mirror implementation rather than behavior.",
+      "Chose to compute average rating on read rather than store a running average, since ratings volume is small and local, and recomputing avoids any risk of a stored average drifting from the underlying data."
+    ]
+  },
+  "testingDecisions": {
+    "philosophy": "Tests exercise ratingsStore's public functions only (getShops, getRatingsForShop, addRating), asserting on return values, never reaching into localStorage directly or asserting on component internals. Storage could later be swapped for a real API without invalidating any test.",
+    "seams": ["ratingsStore (getShops, getRatingsForShop, addRating)"],
+    "priorArt": ["None — fresh test build with no existing codebase; ratingsStore tests are the first written, following one-seam vertical slices per the tdd skill."]
+  },
+  "outOfScope": [
+    "User accounts or login",
+    "Adding new coffee shops — the shop list is fixed and seeded",
+    "Editing or deleting existing ratings",
+    "A real backend server or database",
+    "Photo uploads for shops or reviews"
+  ],
+  "furtherNotes": "This is a test build for exercising the to-system-design skill in the plan-to-ship pipeline, not a real product commitment. Built with React + Vite."
+}
+</script>
