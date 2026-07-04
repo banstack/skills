@@ -22,6 +22,8 @@ Work from whatever is already in the conversation. If the user passes a referenc
 
 Explore to understand the current state of the code, if you haven't already. Use the project's domain glossary vocabulary throughout, and respect ADRs in the area you're touching.
 
+If there's no existing codebase (a greenfield build), skip this step — there's nothing to explore yet.
+
 ### 3. Confirm seams
 
 Sketch the seams at which you're going to test the feature. Prefer existing seams over new ones, and the highest seam possible — the fewer seams across the codebase, the better; ideally one. Check with the user that these seams match their expectations before writing the PRD.
